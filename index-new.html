@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>我的家 · 家庭互动衣橱</title>
+    <!-- Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "苹方", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #FFF8F0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        #app {
+            width: 393px;
+            min-height: 852px;
+            background: #FFF8F0;
+            box-shadow: 0 0 30px rgba(0,0,0,0.05);
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            border-radius: 32px;
+            margin: 16px auto;
+        }
+
+        /* 全局文字与颜色 */
+        .text-primary { color: #2C3E50; }
+        .text-secondary { color: #7E8C9E; }
+        .bg-warm { background: #FFF8F0; }
+        .bg-card { background: #FFFFFF; }
+        .btn-orange { background: #FF8C42; color: white; border: none; }
+        .border-light { border: 1px solid #F0E4D5; }
+        .rounded-card { border-radius: 12px; }
+        .shadow-card { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        /* 顶部导航 (衣橱/菜单/家庭事务) 居中 */
+        .top-tab-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 0 0;
+            background: #FFF8F0;
+            border-bottom: 1px solid #F5E6D8;
+            gap: 32px;
+        }
+        .top-tab {
+            font-size: 16px;
+            font-weight: 600;
+            color: #A6B4C2;
+            padding-bottom: 8px;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        .top-tab.active {
+            color: #FF8C42;
+            border-bottom: 2px solid #FF8C42;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 393px;
+            height: 72px;
+            background: #FFFFFF;
+            border-top: 1px solid #F0E4D5;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+            border-radius: 0 0 32px 32px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #A6B4C2;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item.active { color: #FF8C42; }
+
+        /* 左侧导航 + 右侧内容 */
+        .split-layout {
+            display: flex;
+            min-height: 500px;
+        }
+        .left-categories {
+            width: 100px;
+            background: #FFF5EC;
+            padding: 8px 0;
+            border-right: 1px solid #F0E4D5;
+        }
+        .cat-item {
+            padding: 14px 8px;
+            font-size: 14px;
+            color: #2C3E50;
+            text-align: center;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        .cat-item.active {
+            background: #FFFFFF;
+            border-left: 3px solid #FF8C42;
+            font-weight: 600;
+            color: #FF8C42;
+        }
+        .right-content {
+            flex: 1;
+            padding: 12px;
+        }
+
+        /* 双tab（我的衣橱/TA的衣橱） */
+        .closet-tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .closet-tab {
+            font-weight: 600;
+            color: #A6B4C2;
+            padding-bottom: 4px;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        .closet-tab.active {
+            color: #FF8C42;
+            border-bottom: 2px solid #FF8C42;
+        }
+
+        /* 网格卡片 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .cloth-card, .menu-card, .task-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 12px;
+        }
+        .task-card {
+            margin-bottom: 12px;  /* 确保间距 */
+        }
+
+        /* 按钮行 已选+推荐 */
+        .action-row {
+            display: flex;
+            gap: 12px;
+            padding: 16px 16px 8px;
+            background: #FFF8F0;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 30px;
+            background: white;
+            border: 1px solid #FF8C42;
+            color: #FF8C42;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+        .action-btn.primary {
+            background: #FF8C42;
+            color: white;
+            border: none;
+        }
+
+        /* 表单卡片 */
+        .form-group { margin-bottom: 20px; }
+        .upload-area {
+            border: 2px dashed #FFD1B3;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            color: #A6B4C2;
+        }
+        .cat-btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cat-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: white;
+            border: 1px solid #E0D6CC;
+            color: #2C3E50;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .cat-btn.active {
+            background: #FF8C42;
+            color: white;
+            border-color: #FF8C42;
+        }
+
+        /* 家庭中心动态标签 */
+        .tag-blue { background: #E6F0FF; color: #2E6EDF; }
+        .tag-green { background: #E6F9ED; color: #1F8B4C; }
+        .tag-purple { background: #F3E8FF; color: #8B5CF6; }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-card {
+            width: 320px; background: white; border-radius: 20px; padding: 20px;
+        }
+        .toast-msg {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: #2C3E50; color: white; padding: 10px 20px; border-radius: 40px;
+            font-size: 14px; z-index: 3000; opacity: 0.9;
+        }
+
+        .empty-state { text-align: center; padding: 40px; color: #A6B4C2; }
+        .avatar-sm { width: 40px; height: 40px; border-radius: 50%; background: #FFE0CC; display: flex; align-items: center; justify-content: center; }
+        .back-btn { width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor: pointer; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="view-container"></div>
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <div class="nav-item" data-bottom="home"><i class="fas fa-home"></i><span>主页</span></div>
+        <div class="nav-item" data-bottom="family"><i class="fas fa-users"></i><span>家庭中心</span></div>
+        <div class="nav-item" data-bottom="profile"><i class="fas fa-user"></i><span>我的</span></div>
+    </div>
+    <div id="modal-root"></div>
+    <div id="toast-root"></div>
+</div>
+
+<script>
+    (function(){
+        // ---------- 数据 & 存储 ----------
+        const STORAGE_KEY = 'myhome_app_v2';
+        let appData = {
+            clothes: [],
+            menus: [],
+            tasks: [],
+            familyOrders: [],
+            members: [
+                { id:'u1', name:'我', avatar:'👤', role:'家庭成员' },
+                { id:'u2', name:'妈妈', avatar:'👩', role:'主厨' },
+                { id:'u3', name:'爸爸', avatar:'👨', role:'维修工' },
+                { id:'u4', name:'妹妹', avatar:'🧒', role:'小帮手' },
+            ],
+            currentUserId: 'u1',
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if(saved) { try { appData = JSON.parse(saved); } catch(e){} }
+            else {
+                // 初始mock
+                appData.clothes = [
+                    { id:'c1', name:'针织开衫', image:'🧥', category:'上衣', ownerId:'u1', desc:'软糯亲肤', rating:4.5, comments:[] },
+                    { id:'c2', name:'阔腿牛仔裤', image:'👖', category:'下装', ownerId:'u1', desc:'高腰显瘦', rating:4.8 },
+                    { id:'c3', name:'碎花连衣裙', image:'👗', category:'裙子', ownerId:'u2', desc:'春夏款' },
+                ];
+                appData.menus = [
+                    { id:'m1', name:'番茄鸡蛋面', items:['面条','番茄'], ownerId:'u1', category:'主食' },
+                    { id:'m2', name:'拿铁咖啡', items:['咖啡液','牛奶'], ownerId:'u2', category:'饮品' },
+                ];
+                appData.tasks = [
+                    { id:'t1', title:'洗碗', category:'厨房', ownerId:'u1', status:'进行中' },
+                    { id:'t2', title:'拖地', category:'客厅', ownerId:'u2', status:'已完成' },
+                ];
+                saveData();
+            }
+        }
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }
+        function showToast(msg) {
+            const root = document.getElementById('toast-root');
+            const toast = document.createElement('div'); toast.className='toast-msg'; toast.innerText=msg;
+            root.appendChild(toast);
+            setTimeout(()=> toast.remove(), 2000);
+        }
+
+        // 视图状态
+        let currentBottomTab = 'home';
+        let currentTopTab = 'closet';
+        let currentCategory = '全部';
+        let closetSubTab = 'my'; // 'my' 或 'other'
+        let selectedItems = new Set();
+        let viewStack = [];
+
+        function pushView(renderFn) { viewStack.push(renderFn); renderView(); }
+        function popView() { if(viewStack.length>1) { viewStack.pop(); renderView(); } else { goToHome(); } }
+        function goToHome() {
+            viewStack = [renderMainHome];
+            currentBottomTab='home'; currentTopTab='closet'; currentCategory='全部'; closetSubTab='my';
+            renderView();
+        }
+        function renderView() {
+            if(viewStack.length===0) goToHome();
+            viewStack[viewStack.length-1]();
+            updateBottomActive();
+        }
+        function updateBottomActive() {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.bottom === currentBottomTab);
+            });
+        }
+
+        // ---------- 主页渲染 ----------
+        function renderMainHome() {
+            const container = document.getElementById('view-container');
+            let html = `
+                <div style="text-align:center; padding:12px 0 4px; font-weight:600; font-size:18px; color:#2C3E50;">我的家</div>
+                <div class="top-tab-bar">
+                    <div class="top-tab ${currentTopTab==='closet'?'active':''}" data-top="closet">衣橱</div>
+                    <div class="top-tab ${currentTopTab==='menu'?'active':''}" data-top="menu">菜单</div>
+                    <div class="top-tab ${currentTopTab==='task'?'active':''}" data-top="task">家庭事务</div>
+                </div>
+            `;
+            if(currentTopTab==='closet') html += renderClosetHome();
+            else if(currentTopTab==='menu') html += renderMenuHome();
+            else html += renderTaskHome();
+            container.innerHTML = html;
+            bindEvents();
+        }
+
+        function renderClosetHome() {
+            const leftCats = ['全部','上衣','下装','套装','饰品','鞋子'];
+            const isMy = closetSubTab === 'my';
+            const clothes = appData.clothes.filter(c => isMy ? c.ownerId === appData.currentUserId : c.ownerId !== appData.currentUserId);
+            const filtered = currentCategory==='全部' ? clothes : clothes.filter(c=>c.category===currentCategory);
+            let html = `<div class="split-layout">`;
+            html += `<div class="left-categories">${leftCats.map(c=>`<div class="cat-item ${currentCategory===c?'active':''}" data-cat="${c}">${c}</div>`).join('')}</div>`;
+            html += `<div class="right-content">`;
+            html += `<div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="closet-tabs">
+                    <span class="closet-tab ${closetSubTab==='my'?'active':''}" data-sub="my">我的衣橱</span>
+                    <span class="closet-tab ${closetSubTab==='other'?'active':''}" data-sub="other">TA的衣橱</span>
+                </div>
+                ${isMy ? '<i class="fas fa-plus-circle" id="addClothBtn" style="color:#FF8C42; font-size:22px;"></i>' : ''}
+            </div>`;
+            if(filtered.length===0) html += `<div class="empty-state">✨ 空空如也</div>`;
+            else {
+                html += `<div class="grid-2">`;
+                filtered.forEach(c => {
+                    html += `<div class="cloth-card" data-id="${c.id}" data-type="cloth">`;
+                    html += `<div style="display:flex; align-items:center; gap:8px;"><input type="checkbox" class="item-checkbox" data-id="${c.id}" ${selectedItems.has(c.id)?'checked':''}>`;
+                    html += `<span style="font-size:28px;">${c.image||'👕'}</span></div>`;
+                    html += `<div style="font-weight:600;">${c.name}</div><div style="font-size:12px;">${c.desc||''}</div>`;
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div></div>`;
+            html += `<div class="action-row"><div class="action-btn" id="selectedBtn"><i class="far fa-check-circle"></i> 已选 (${selectedItems.size})</div>`;
+            html += `<div class="action-btn primary" id="recommendBtn"><i class="far fa-paper-plane"></i> 推荐</div></div>`;
+            return html;
+        }
+
+        function renderMenuHome() {
+            const leftCats = ['全部','主食','饮品','外卖'];
+            const menus = appData.menus;
+            let html = `<div class="split-layout">`;
+            html += `<div class="left-categories">${leftCats.map(c=>`<div class="cat-item ${currentCategory===c?'active':''}" data-cat="${c}">${c}</div>`).join('')}</div>`;
+            html += `<div class="right-content"><div style="display:flex; justify-content:space-between;"><span>今日菜单</span><i class="fas fa-plus-circle" id="addMenuBtn" style="color:#FF8C42; font-size:22px;"></i></div>`;
+            if(menus.length) menus.forEach(m=>{ html += `<div class="menu-card"><input type="checkbox" class="item-checkbox" data-id="${m.id}"> ${m.name} (${m.category||'主食'})</div>`; });
+            else html += '<div class="empty-state">暂无菜品</div>';
+            html += `</div></div><div class="action-row"><div class="action-btn" id="selectedBtn">已选 (${selectedItems.size})</div><div class="action-btn primary" id="recommendBtn">推荐</div></div>`;
+            return html;
+        }
+
+        function renderTaskHome() {
+            const leftCats = ['全部','厨房','卫生间','卧室','客厅','餐厅'];
+            const tasks = appData.tasks;
+            let html = `<div class="split-layout"><div class="left-categories">${leftCats.map(c=>`<div class="cat-item ${currentCategory===c?'active':''}" data-cat="${c}">${c}</div>`).join('')}</div>`;
+            html += `<div class="right-content"><div style="display:flex; justify-content:space-between;"><span>家务列表</span><i class="fas fa-plus-circle" id="addTaskBtn" style="color:#FF8C42; font-size:22px;"></i></div>`;
+            tasks.forEach(t=>{ html += `<div class="task-card"><input type="checkbox" class="item-checkbox" data-id="${t.id}"> ${t.title} <span style="font-size:12px;">${t.status}</span></div>`; });
+            html += `</div></div><div class="action-row"><div class="action-btn" id="selectedBtn">已选 (${selectedItems.size})</div><div class="action-btn primary">推荐</div></div>`;
+            return html;
+        }
+
+        function bindEvents() {
+            // 顶部tab切换
+            document.querySelectorAll('.top-tab').forEach(t => t.addEventListener('click', (e) => {
+                currentTopTab = t.dataset.top; currentCategory='全部'; renderMainHome();
+            }));
+            // 左侧分类
+            document.querySelectorAll('.cat-item').forEach(c => c.addEventListener('click', () => {
+                currentCategory = c.dataset.cat; renderMainHome();
+            }));
+            // 衣橱子tab
+            document.querySelectorAll('.closet-tab').forEach(t => t.addEventListener('click', (e) => {
+                closetSubTab = t.dataset.sub; currentCategory='全部'; renderMainHome();
+            }));
+            // 添加按钮
+            document.getElementById('addClothBtn')?.addEventListener('click', ()=> pushView(renderAddCloth));
+            document.getElementById('addMenuBtn')?.addEventListener('click', ()=> pushView(renderAddMenu));
+            document.getElementById('addTaskBtn')?.addEventListener('click', ()=> pushView(renderAddTask));
+            // 已选
+            document.getElementById('selectedBtn')?.addEventListener('click', ()=> showToast(`已选 ${selectedItems.size} 项`));
+            document.getElementById('recommendBtn')?.addEventListener('click', ()=> openRecommendModal());
+            // 卡片点击详情
+            document.querySelectorAll('.cloth-card').forEach(c => c.addEventListener('click', (e) => {
+                if(e.target.tagName==='INPUT') return;
+                pushView(()=> renderClothDetail(c.dataset.id));
+            }));
+            // checkbox联动
+            document.querySelectorAll('.item-checkbox').forEach(cb => cb.addEventListener('change', (e) => {
+                const id = e.target.dataset.id;
+                e.target.checked ? selectedItems.add(id) : selectedItems.delete(id);
+                document.querySelectorAll('#selectedBtn').forEach(b => b.innerHTML = `已选 (${selectedItems.size})`);
+            }));
+        }
+
+        // ---------- 添加页面 (美化) ----------
+        function renderAddCloth() {
+            let html = `<div style="padding:16px;"><div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;"><i class="fas fa-arrow-left back-btn" id="backBtn"></i><span style="font-weight:600; font-size:18px; flex:1; text-align:center;">添加衣物</span></div>`;
+            html += `<div class="form-group"><label>衣物名称</label><input id="clothName" maxlength="20" placeholder="请输入名称（最多20字）" style="width:100%; padding:12px; border-radius:12px; border:1px solid #E0D6CC;"><span id="charCount">0/20</span></div>`;
+            html += `<div class="upload-area" id="uploadTrigger"><i class="fas fa-camera"></i> 点击上传图片</div>`;
+            html += `<div class="cat-btn-group" id="catGroup"><span class="cat-btn active" data-cat="上衣">上衣</span><span class="cat-btn" data-cat="裤子">裤子</span><span class="cat-btn" data-cat="裙子">裙子</span><span class="cat-btn" data-cat="其他">其他</span></div>`;
+            html += `<button class="btn-orange" style="width:100%; padding:14px; border-radius:40px; margin-top:24px;" id="saveCloth">保存</button></div>`;
+            document.getElementById('view-container').innerHTML = html;
+            document.getElementById('backBtn').onclick = popView;
+            const nameInput = document.getElementById('clothName');
+            nameInput.addEventListener('input', ()=> document.getElementById('charCount').innerText = `${nameInput.value.length}/20`);
+            let selectedCat = '上衣';
+            document.querySelectorAll('.cat-btn').forEach(b => b.addEventListener('click', function(){
+                document.querySelectorAll('.cat-btn').forEach(bb=>bb.classList.remove('active')); this.classList.add('active'); selectedCat = this.dataset.cat;
+            }));
+            document.getElementById('saveCloth').onclick = ()=>{
+                const name = nameInput.value.trim(); if(!name) return showToast('名称必填');
+                appData.clothes.push({ id:'c'+Date.now(), name, image:'👕', category:selectedCat, ownerId:appData.currentUserId, desc:'' });
+                saveData(); showToast('添加成功'); popView();
+            };
+        }
+        function renderAddMenu() { /* 类似简化 */ 
+            document.getElementById('view-container').innerHTML = `<div><i class="fas fa-arrow-left" id="backBtn"></i>添加菜品<input id="menuName"><button id="saveMenu">保存</button></div>`;
+            document.getElementById('backBtn').onclick=popView;
+            document.getElementById('saveMenu').onclick=()=>{ appData.menus.push({id:'m'+Date.now(), name:document.getElementById('menuName').value, ownerId:appData.currentUserId}); saveData(); popView(); };
+        }
+        function renderAddTask() {
+            document.getElementById('view-container').innerHTML = `<div><i class="fas fa-arrow-left" id="backBtn"></i>添加家务<input id="taskTitle"><button id="saveTask">保存</button></div>`;
+            document.getElementById('backBtn').onclick=popView;
+            document.getElementById('saveTask').onclick=()=>{ appData.tasks.push({id:'t'+Date.now(), title:document.getElementById('taskTitle').value, category:'其他', ownerId:appData.currentUserId, status:'进行中'}); saveData(); popView(); };
+        }
+
+        // 详情页
+        function renderClothDetail(id) {
+            const cloth = appData.clothes.find(c=>c.id===id);
+            if(!cloth) return popView();
+            const isOwner = cloth.ownerId === appData.currentUserId;
+            let html = `<div style="background:#FFF8F0;"><div style="position:relative;"><div style="font-size:80px; text-align:center; padding:20px;">${cloth.image}</div><div class="back-btn" style="position:absolute; top:16px; left:16px;" id="backBtn"><i class="fas fa-arrow-left"></i></div></div>`;
+            html += `<div class="bg-card rounded-card shadow-card" style="margin:16px; padding:16px;"><div style="display:flex; justify-content:space-between;"><div><h3>${cloth.name}</h3><span class="tag-blue" style="padding:4px 12px; border-radius:20px;">${cloth.category}</span></div>${isOwner?'<i class="fas fa-edit" id="editClothBtn" style="color:#FF8C42;"></i>':''}</div>`;
+            html += `<p>${cloth.desc||'暂无描述'}</p></div>`;
+            html += `<div style="margin:16px;"><h4>评价 <i class="fas fa-plus-circle" id="addComment" style="color:#FF8C42;"></i></h4><div>暂无评价</div></div></div>`;
+            document.getElementById('view-container').innerHTML = html;
+            document.getElementById('backBtn').onclick = popView;
+            if(isOwner) document.getElementById('editClothBtn').onclick = ()=> pushView(()=> renderEditCloth(id));
+        }
+
+        function renderEditCloth(id) {
+            const cloth = appData.clothes.find(c=>c.id===id);
+            document.getElementById('view-container').innerHTML = `<div><i class="fas fa-arrow-left" id="backBtn"></i>编辑<input id="editName" value="${cloth.name}"><input id="editDesc" value="${cloth.desc}"><input type="file" id="editImage"><button id="saveEdit">保存</button></div>`;
+            document.getElementById('backBtn').onclick=popView;
+            document.getElementById('saveEdit').onclick=()=>{ cloth.name=document.getElementById('editName').value; cloth.desc=document.getElementById('editDesc').value; saveData(); popView(); };
+        }
+
+        // 家庭中心 & 我的 (按设计重绘)
+        function renderFamilyCenter() {
+            let html = `<div style="padding:16px;"><div style="text-align:center;"><h2>温馨小家</h2><p>${appData.members.length}位成员</p></div>`;
+            html += `<div style="display:flex; gap:12px; overflow-x:auto; padding:8px 0;">${appData.members.map(m=>`<div style="text-align:center;"><div class="avatar-sm">${m.avatar}</div><span>${m.name}</span></div>`).join('')}</div>`;
+            html += `<div style="margin-top:20px;"><div style="display:flex; justify-content:space-between;"><h4>家庭动态</h4><span>查看全部</span></div>`;
+            html += `<div class="bg-card rounded-card" style="padding:12px;"><span class="tag-blue">衣橱</span> 我 添加了 针织开衫 · 2分钟前</div>`;
+            html += `<div class="bg-card rounded-card" style="padding:12px; margin-top:8px;"><span class="tag-green">菜单</span> 妈妈 发布了 拿铁咖啡 · 1小时前</div>`;
+            html += `</div><button class="btn-orange" style="width:100%; padding:14px; border-radius:40px; margin:20px 0;">添加成员</button>`;
+            html += `<button style="border:1px solid #FF3B30; color:#FF3B30; background:transparent; width:100%; padding:14px; border-radius:40px;">退出家庭</button></div>`;
+            document.getElementById('view-container').innerHTML = html;
+        }
+
+        function renderProfile() {
+            document.getElementById('view-container').innerHTML = `
+                <div style="padding:16px;"><div class="bg-card rounded-card" style="padding:20px; display:flex; align-items:center; gap:16px;">
+                <div style="font-size:48px;">👤</div><div><h3>我</h3><span class="text-secondary">家庭成员</span></div></div>
+                <div class="bg-card rounded-card" style="margin-top:16px; padding:16px;"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-star" style="color:#FF8C42;"></i> 我的评价</span><i class="fas fa-chevron-right"></i></div></div>
+                <div class="bg-card rounded-card" style="margin-top:8px; padding:16px;"><div style="display:flex; justify-content:space-between;"><span><i class="fas fa-cog"></i> 设置</span><i class="fas fa-chevron-right"></i></div></div>
+            </div>`;
+        }
+
+        // 底部导航切换
+        document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', (e) => {
+            const tab = el.dataset.bottom; currentBottomTab = tab;
+            if(tab === 'home') goToHome();
+            else if(tab === 'family') { viewStack = [renderFamilyCenter]; renderView(); }
+            else if(tab === 'profile') { viewStack = [renderProfile]; renderView(); }
+        }));
+
+        // 推荐弹窗
+        function openRecommendModal() {
+            const modal = document.getElementById('modal-root');
+            modal.innerHTML = `<div class="modal-overlay"><div class="modal-card"><h3>推荐给成员</h3>${appData.members.filter(m=>m.id!==appData.currentUserId).map(m=>`<div data-uid="${m.id}" class="recv">${m.avatar} ${m.name}</div>`).join('')}<button id="confirmRec">确认</button><button id="closeModal">取消</button></div></div>`;
+            modal.querySelector('#closeModal').onclick = ()=> modal.innerHTML='';
+            modal.querySelector('#confirmRec').onclick = ()=>{
+                if(selectedItems.size===0) { showToast('请勾选项目'); return; }
+                appData.familyOrders.push({id:'ord'+Date.now(), items:[...selectedItems], from:appData.currentUserId});
+                saveData(); showToast('推荐成功'); modal.innerHTML='';
+            };
+        }
+
+        loadData(); goToHome();
+    })();
+</script>
+</body>
+</html>
